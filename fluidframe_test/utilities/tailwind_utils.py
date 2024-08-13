@@ -1,6 +1,7 @@
 import os
 import subprocess
 import importlib.util
+from config import FLUIDFRAME_BUILD_DIR, FLUIDFRAME_LIB_DIR
 
 def tailwind_build(args):
     """
@@ -16,14 +17,14 @@ def tailwind_build(args):
     If the directory does not exist, it prints an error message and returns.
     If the build process fails, it catches the exception and prints an error message.
     """
-    fluidframe_dir = os.path.join(os.getcwd(), 'fluidframe')
+    fluidframe_dir = os.path.join(os.getcwd(), FLUIDFRAME_BUILD_DIR)
     if not os.path.exists(fluidframe_dir):
         print("Error: FluidFrame directory not found. Please run 'fluidframe init <project_name>' first.")
         return
 
-    os.chdir(fluidframe_dir)
+    os.chdir(FLUIDFRAME_LIB_DIR)
     try:
-        subprocess.run(['npx', 'tailwindcss', '-i', 'input.css', '-o', 'dist/output.css'], check=True)
+        subprocess.run(['npx', 'tailwindcss', '-i', os.path.join(fluidframe_dir, 'input.css'), '-o', os.path.join(fluidframe_dir, 'dist', 'output.css')], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error on Tailwind build process: {e}")
     except KeyboardInterrupt:
@@ -52,6 +53,7 @@ def generate_tailwind_config(fluidframe_dir):
     package_path = get_package_path()
     
     library_files = [
+        os.path.join(package_path, "components", "**", "*.py"),
         os.path.join(package_path, "core", "components", "**", "*.py"),
         os.path.join(package_path, "templates", "**", "*.html"),
     ]

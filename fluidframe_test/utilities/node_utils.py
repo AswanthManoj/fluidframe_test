@@ -2,7 +2,10 @@ import os
 import json
 import shutil
 import subprocess
+from pathlib import Path
 from fluidframe_test.utilities.tailwind_utils import generate_tailwind_config
+from config import FLUIDFRAME_BUILD_DIR, FLUIDFRAME_LIB_DIR, FLUIDFRAME_SCRIPTS_DIR
+
 
 def check_node_installed():
     """Check if Node.js is installed."""
@@ -34,8 +37,8 @@ def init_project(args):
     """
     project_name = args.project_name
     current_dir = os.getcwd()
-    src_dir = os.path.join(current_dir, 'src')
-    fluidframe_dir = os.path.join(current_dir, 'fluidframe')
+    src_dir = os.path.join(current_dir, FLUIDFRAME_SCRIPTS_DIR)
+    fluidframe_dir = os.path.join(current_dir, FLUIDFRAME_BUILD_DIR)
     utilities_dir = os.path.join(os.path.dirname(__file__), '..', 'utilities')
 
     print(f"Initializing FluidFrame project: {project_name}")
@@ -71,7 +74,7 @@ def init_project(args):
         f.write('@tailwind base;\n@tailwind components;\n@tailwind utilities;\n')
 
     # Change to fluidframe directory
-    os.chdir(fluidframe_dir)
+    os.chdir(FLUIDFRAME_LIB_DIR)
 
     # Install dependencies
     try:
@@ -83,7 +86,7 @@ def init_project(args):
 
     # Run initial Tailwind build
     try:
-        subprocess.run(['npx', 'tailwindcss', '-i', 'input.css', '-o', 'dist/output.css'], check=True)
+        subprocess.run(['npx', 'tailwindcss', '-i', os.path.join(fluidframe_dir, 'input.css'), '-o', os.path.join(fluidframe_dir, 'dist', 'output.css')], check=True)
         print("Successfully built initial CSS")
     except subprocess.CalledProcessError as e:
         print(f"Error building initial CSS: {e}")
@@ -109,13 +112,12 @@ def install(args):
     If the FluidFrame directory does not exist, it prints an error message and returns.
     """
     package_name = args.package_name
-    fluidframe_dir = os.path.join(os.getcwd(), 'fluidframe')
 
-    if not os.path.exists(fluidframe_dir):
-        print("Error: FluidFrame directory not found. Please run 'fluidframe init <project_name>' first.")
+    if not os.path.exists(FLUIDFRAME_LIB_DIR):
+        print("Error: FluidFrame library directory not found.")
         return
 
-    os.chdir(fluidframe_dir)
+    os.chdir(FLUIDFRAME_LIB_DIR)
 
     print(f"Installing Node.js package: {package_name}")
 
@@ -124,3 +126,6 @@ def install(args):
         print(f"Successfully installed {package_name}")
     except subprocess.CalledProcessError as e:
         print(f"Error installing {package_name}: {e}")
+
+    # Change back to original directory
+    os.chdir(os.getcwd())
