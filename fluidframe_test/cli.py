@@ -1,5 +1,5 @@
 import argparse
-from fluidframe_test.utilities.node_utils import init, install
+from fluidframe_test.utilities.node_utils import init_project, install
 from fluidframe_test.utilities.tailwind_utils import tailwind_build
 
 
@@ -10,7 +10,7 @@ def main():
     # Init command
     init_parser = subparsers.add_parser('init', help='Initialize FluidFrame')
     init_parser.add_argument('project_name', help='Name of the project to initialize')
-    init_parser.set_defaults(func=init)
+    init_parser.set_defaults(func=init_project)
 
     # Install command
     install_parser = subparsers.add_parser('install', help='Install a Node.js package')
