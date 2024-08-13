@@ -43,9 +43,9 @@ def generate_tailwind_config(fluidframe_dir):
     It includes the library files and user project files in the content section of the configuration.
     """
     library_files = [
-        "./fluidframe/core/components.py",
-        "./fluidframe/components/**/*.py",
-        "./fluidframe/templates/index.html"
+        "/core/components.py",
+        "/components/**/*.py",
+        "/templates/index.html"
     ]
 
     # Get the relative path from the user's project to the installed fluidframe package
