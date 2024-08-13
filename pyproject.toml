@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "fluidframe-test"
+version = "0.1.0"
+description = ""
+authors = ["AswanthManoj <aswanthmanoj51@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+setuptools = "^72.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+fluidframe = "fluidframe_test.main:main"
