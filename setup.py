@@ -1,4 +1,31 @@
-from setuptools import setup, find_packages
+import sys, os
+import subprocess
+from Cython.Build import cythonize
+from setuptools.command.build_py import build_py
+from setuptools import setup, find_packages, Extension
+from fluidframe_test.utilities.node_utils import check_node_installed, install_node
+
+sys.dont_write_bytecode = True
+
+class CustomBuild(build_py):
+    def run(self):
+        if not check_node_installed():
+            install_node()
+        # run_command(f"python setup.py build_ext --inplace", cwd=library_root)
+        build_py.run(self)
+        print("Build complete inside CustomBuild")
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+pyx_path = os.path.join(current_dir, 'fluidframe_test', 'core', 'tags', 'tags.pyx')
+extensions = [
+    Extension(
+        "fluidframe_test.core.tags.tags",
+        [pyx_path],
+        extra_compile_args=["-O3"],
+        extra_link_args=["-O3"],
+        py_limited_api=True
+    )
+]
 
 setup(
     name='fluidframe',
@@ -15,5 +42,14 @@ setup(
             'fluidframe=fluidframe.cli:main',
         ],
     },
-    python_requires='>=3.10'
+    cmdclass={
+        'build_py': CustomBuild,
+    },
+    package_data={
+        'fluidframe_test': [
+            'core/tags/*.pyi',
+        ],
+    },
+    python_requires='>=3.10',
+    ext_modules=cythonize(extensions, language_level="3"),
 )
