@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 setuptools = "^72.1.0"
+cython = "^3.0.11"
 
 
 [build-system]
@@ -16,4 +17,4 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poetry.scripts]
-fluidframe = "fluidframe_test.main:main"
+fluidframe = "fluidframe_test.cli:main"

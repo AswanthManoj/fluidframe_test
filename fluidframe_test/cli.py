@@ -1,0 +1,31 @@
+import argparse
+from fluidframe_test.utilities.node_utils import init, install
+from fluidframe_test.utilities.tailwind_utils import tailwind_build
+
+
+def main():
+    parser = argparse.ArgumentParser(description='FluidFrame CLI')
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+
+    # Init command
+    init_parser = subparsers.add_parser('init', help='Initialize FluidFrame')
+    init_parser.add_argument('project_name', help='Name of the project to initialize')
+    init_parser.set_defaults(func=init)
+
+    # Install command
+    install_parser = subparsers.add_parser('install', help='Install a Node.js package')
+    install_parser.add_argument('package_name', help='Name of the package to install')
+    install_parser.set_defaults(func=install)
+    
+    # In the main() function, add:
+    watch_parser = subparsers.add_parser('tailwind_build', help='Start Tailwind CSS build process')
+    watch_parser.set_defaults(func=tailwind_build)
+
+    args = parser.parse_args()
+    if hasattr(args, 'func'):
+        args.func(args)
+    else:
+        parser.print_help()
+
+if __name__ == '__main__':
+    main()
