@@ -11,7 +11,7 @@ sys.dont_write_bytecode = True
 class CustomBuild(build_py):
     def run(self):
         library_root = Path(__file__).parent
-        build_cython(library_root)
+        # build_cython(library_root)
         if not check_node_installed():
             install_node()
         print("Build complete inside CustomBuild")
