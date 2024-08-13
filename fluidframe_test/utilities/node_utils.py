@@ -19,7 +19,7 @@ def install_node():
     print("You may need to manually download and install Node.js.")
 
 
-def init(args):
+def init_project(args):
     """
     Initializes a FluidFrame project with the given project name.
 

@@ -1,5 +1,6 @@
 import os
 import subprocess
+import importlib.util
 
 def tailwind_build(args):
     """
@@ -28,7 +29,13 @@ def tailwind_build(args):
     except KeyboardInterrupt:
         print("Tailwind build process stopped.")
 
-        
+def get_package_path():
+    """Get the absolute path to the installed FluidFrame package."""
+    spec = importlib.util.find_spec("fluidframe_test")
+    if spec is None:
+        raise ImportError("FluidFrame package not found")
+    return os.path.dirname(spec.origin)
+
 def generate_tailwind_config(fluidframe_dir):
     """
     Generates a Tailwind configuration file for a FluidFrame project.
@@ -42,18 +49,12 @@ def generate_tailwind_config(fluidframe_dir):
     The function generates a tailwind.config.js file in the specified FluidFrame project directory.
     It includes the library files and user project files in the content section of the configuration.
     """
+    package_path = get_package_path()
+    
     library_files = [
-        "/core/components.py",
-        "/components/**/*.py",
-        "/templates/index.html"
+        os.path.join(package_path, "core", "components", "**", "*.py"),
+        os.path.join(package_path, "templates", "**", "*.html"),
     ]
-
-    # Get the relative path from the user's project to the installed fluidframe package
-    fluidframe_package_path = os.path.dirname(os.path.dirname(__file__))
-    relative_path = os.path.relpath(fluidframe_package_path, fluidframe_dir)
-
-    # Prepend the relative path to each library file
-    library_files = [os.path.join(relative_path, file) for file in library_files]
 
     config_content = f"""
 module.exports = {{
