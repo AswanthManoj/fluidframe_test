@@ -29,3 +29,6 @@ def build(setup_kwargs):
     })
 
     print("Cython extensions built successfully.")
+
+if __name__ == '__main__':
+    build(setup_kwargs={})
