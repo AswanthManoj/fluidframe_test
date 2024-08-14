@@ -1,7 +1,7 @@
 import os
 import subprocess
 import importlib.util
-from config import FLUIDFRAME_BUILD_DIR, FLUIDFRAME_LIB_DIR
+from fluidframe_test.config import FLUIDFRAME_BUILD_DIR
 
 def tailwind_build(args):
     """
@@ -19,16 +19,17 @@ def tailwind_build(args):
     """
     fluidframe_dir = os.path.join(os.getcwd(), FLUIDFRAME_BUILD_DIR)
     if not os.path.exists(fluidframe_dir):
-        print("Error: FluidFrame directory not found. Please run 'fluidframe init <project_name>' first.")
+        print(f"Error: FluidFrame's package directory {FLUIDFRAME_BUILD_DIR} not found. Please run 'fluidframe init <project_name>' first.")
         return
 
-    os.chdir(FLUIDFRAME_LIB_DIR)
+    os.chdir(fluidframe_dir)
     try:
-        subprocess.run(['npx', 'tailwindcss', '-i', os.path.join(fluidframe_dir, 'input.css'), '-o', os.path.join(fluidframe_dir, 'dist', 'output.css')], check=True)
+        subprocess.run(['npx', 'tailwindcss', '-i', 'input.css', '-o', 'dist/output.css'], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error on Tailwind build process: {e}")
     except KeyboardInterrupt:
         print("Tailwind build process stopped.")
+    os.chdir(os.getcwd())
 
 def get_package_path():
     """Get the absolute path to the installed FluidFrame package."""
@@ -54,7 +55,8 @@ def generate_tailwind_config(fluidframe_dir):
     
     library_files = [
         os.path.join(package_path, "components", "**", "*.py"),
-        os.path.join(package_path, "core", "components", "**", "*.py"),
+        os.path.join(package_path, "public", "**", "*.js"),
+        os.path.join(package_path, "core", "**", "*.py"),
         os.path.join(package_path, "templates", "**", "*.html"),
     ]
 

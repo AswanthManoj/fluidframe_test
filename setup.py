@@ -1,5 +1,5 @@
-import sys
-from pathlib import Path
+import sys, os
+import subprocess
 from Cython.Build import cythonize
 from setuptools.command.build_py import build_py
 from setuptools import setup, find_packages, Extension
@@ -11,8 +11,21 @@ class CustomBuild(build_py):
     def run(self):
         if not check_node_installed():
             install_node()
-        print("Build complete inside CustomBuild")
+        self.create_fluidframe_node_module()
+        print("Build complete inside with node installation check and package.json installation for installing FluidFrame dependencies")
         build_py.run(self)
+    
+    def create_fluidframe_node_module(self):
+        # Create node_modules for FluidFrame
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        fluidframe_dir = os.path.join(current_dir, 'fluidframe_test')
+        os.chdir(fluidframe_dir)
+        try:
+            subprocess.run(['npm', 'install'], check=True)
+            print("Successfully installed FluidFrame dependencies")
+        except subprocess.CalledProcessError as e:
+            print(f"Error installing FluidFrame dependencies: {e}")
+        os.chdir(current_dir)
         
  
 extensions = [
@@ -47,6 +60,7 @@ setup(
     package_data={
         'fluidframe_test': [
             'core/tags/*.pyi',
+            'node_modules/**/*',
         ],
     },
     python_requires='>=3.10',
