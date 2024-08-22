@@ -13,7 +13,7 @@ from fluidframe_test.utilities.helper import UniqueIDGenerator
 from starlette.websockets import WebSocketDisconnect, WebSocket
 from fluidframe_test.config import PUBLIC_DIR, HOT_RELOAD_SCRIPT
 from typing import Awaitable, Optional, Any, Callable, Dict, List, Union
-from fluidframe_test.core import html, body, meta, script, link, div, head, title, div, h1, button
+from fluidframe_test.core import html, body, meta, script, link, div, head, title, div, h1, button, p
 
 
 
@@ -54,29 +54,6 @@ class FluidFrame(Starlette):
                     await ws.send_text("pong")
         except WebSocketDisconnect:
             print('Client connection closed')
-            
-    # def run_event_handler(self, component, trigger, target, action):
-    #     def decorator(func):
-    #         route_path = f"/{component.id}/{trigger}"
-    #         # Add HTMX attributes to the component
-    #         component.htmx_attributes = {
-    #             "hx-trigger": trigger,
-    #             "hx-target": f"#{target.id}",
-    #             "hx-swap": action,
-    #             "hx-get": route_path
-    #         }
-    #         # Wrap the original render method to include htmx attributes
-    #         original_render = component.render
-    #         def wrapped_render(*args, **kwargs):
-    #             rendered_content = original_render(*args, **kwargs)
-    #             htmx_div = div(i=[rendered_content], **component.htmx_attributes)
-    #             return htmx_div
-    #         component.render = wrapped_render
-            
-    #         # Register the route
-    #         self.add_event_route(route_path, func)
-    #         return func
-    #     return decorator
     
     def add_event_route(self, path: str, handler: Callable):
         self.add_fluidroute(path, handler)
@@ -132,15 +109,15 @@ class Component(ABC):
     def render(self) -> str:
         pass
     
-    def on_change(self, trigger: str, target: 'Component', action: str, cache: bool = False) -> Callable:
+    def on_change(self, trigger: str, target: 'Component'|List['Component'], action: str, cache: bool = False) -> Callable:
         def decorator(func: Callable):
             route_path = f"/{self.id}/{trigger}"
             # Add HTMX attributes to the component
             self.htmx_attributes.update({
                 "hx-swap": action,
                 "hx-get": route_path,
-                "hx-target": f"#{target.id}",
                 "hx-trigger": f"{trigger} once" if cache else trigger,
+                "hx-target": f"#{target.id}" if isinstance(target, Component) else f"{', '.join([f'#{t.id}' for t in target])}",
             })
 
             # Wrap the original render method to include HTMX attributes
@@ -182,7 +159,15 @@ class Header(Component):
         
     def render(self) -> str:
         return div(h1(self.title), id=self.id, cls="text-2xl font-bold m-5")
-       
+    
+    
+class Text(Component):
+    def __init__(self, text: str) -> None:
+        super().__init__()
+        self.text = text
+    
+    def render(self) -> str:
+        return p(self.text, id=self.id, cls="m-5 border border-gray-300 p-5 rounded-lg")   
        
         
 class Button(Component):
@@ -197,23 +182,43 @@ class Button(Component):
 
 app = FluidFrame(reload=True)
 
-increment_btn: Button = app.child(Button("Increment"))
-header = app.child(Header("Here we show a dynamic number"))
-decrement_btn: Button = app.child(Button("Decrement"))
 
-n=0
+###########################
+# Increment and Decrement #
+#############################################################
+increment_btn: Button = app.child(Button("Increment"))      #
+header = app.child(Header("Here we show a dynamic number")) #
+decrement_btn: Button = app.child(Button("Decrement"))      #
+                                                            #
+n=0                                                         #
+                                                            #################################################
+@increment_btn.on_change(trigger="click", target=header, action="innerHTML transition:true", cache=False)   #
+def increment() -> str:                                                                                     #
+    global n                                                                                                #
+    n+=1                                                                                                    #
+    return f"You have clicked the button to increment {n}"                                                  #
+                                                                                                            #
+@decrement_btn.on_change(trigger="click", target=header, action="innerHTML transition:true", cache=False)   #
+def decrement() -> str:                                                                                     #
+    global n                                                                                                #
+    n-=1                                                                                                    #            
+    return f"You have clicked the button to decrement {n}"                                                  #
+#############################################################################################################
 
-@increment_btn.on_change(trigger="click", target=header, action="innerHTML", cache=False)
-def increment() -> str:
-    global n
-    n+=1
-    return f"You have clicked the button to increment {n}"
 
-@decrement_btn.on_change(trigger="click", target=header, action="innerHTML", cache=False)
-def decrement() -> str:
-    global n
-    n-=1
-    return f"You have clicked the button to decrement {n}"
+###################
+# Loading content #
+#############################################
+btn = app.child(Button("Load More"))        #
+t1 = app.child(Text("Loaded Section "))     #
+t2 = app.child(Text("Loded Section"))       #
+                                            #
+                                            ########################################################
+@btn.on_change(trigger="click", target=[t1, t2], action="outerHTML transition:true", cache=False)  #
+def load_more() -> str:                                                                            #
+    return t1.render() + t2.render()                                                               #
+                                                                                                   #
+####################################################################################################
 
 if __name__ == '__main__':
     uvicorn.run("tests2:app", host='127.0.0.1', port=8000, reload=True)
